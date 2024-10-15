@@ -2,14 +2,11 @@
 #![no_main]
 
 use embedded_graphics::{
-    mono_font::{
-        ascii::{FONT_6X10, FONT_9X18_BOLD},
-        iso_8859_5::FONT_10X20,
-        MonoTextStyle,
-    },
-    pixelcolor::Rgb565,
-    prelude::{Point, RgbColor, *},
-    text::Text,
+    image::Image,
+    mono_font::{iso_8859_5::FONT_10X20, MonoTextStyle},
+    pixelcolor::{BinaryColor, Rgb555, Rgb888},
+    prelude::{Point, *},
+    text::{Alignment, LineHeight, Text, TextStyleBuilder},
 };
 use embedded_hal_bus::spi::ExclusiveDevice;
 use esp_backtrace as _;
@@ -19,7 +16,8 @@ use esp_hal::{
     prelude::*,
     spi::{master::Spi, SpiMode},
 };
-use wepd::{DelayWaiter, Display, DisplayConfiguration, Framebuffer};
+use tinybmp::Bmp;
+use wepd::{Color, DelayWaiter, Display, DisplayConfiguration, Framebuffer};
 
 extern crate alloc;
 use core::mem::MaybeUninit;
@@ -47,18 +45,10 @@ fn main() -> ! {
     init_heap();
 
     let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
-    let miso = io.pins.gpio46;
 
-    // let cs = io.pins.gpio33;
-
-    let miso = miso.peripheral_input();
-    // let mosi = mosi.into_peripheral_output();
-
-    let mut bus = Spi::new(peripherals.SPI2, 100.kHz(), SpiMode::Mode0)
+    let bus = Spi::new(peripherals.SPI2, 100.kHz(), SpiMode::Mode0)
         .with_mosi(io.pins.gpio48)
         .with_sck(io.pins.gpio47);
-
-    // .with_pins(sclk, mosi, miso, cs);
 
     let mut display = Display::new(DisplayConfiguration {
         spi: ExclusiveDevice::new(bus, Output::new(io.pins.gpio33, Level::High), delay).unwrap(),
@@ -75,20 +65,32 @@ fn main() -> ! {
     display.reset().unwrap();
 
     display.clear_screen(0xFF).unwrap();
-    // display.draw_image(bitmap, x_lo, y_lo, x_hi, y_hi)
-    // Create a new character style
-    // let style = MonoTextStyle::new(&FONT_6X10, Rgb565::BLACK);
-
-    // Create a text at position (20, 30) and draw it using the previously defined style
-
-    // Text::new("Hello Rust!", Point::new(20, 30), style).draw(&mut display);
 
     let mut fb = Framebuffer::new();
+    let character_style = MonoTextStyle::new(&FONT_10X20, BinaryColor::On);
+    let text_style = TextStyleBuilder::new()
+        .alignment(Alignment::Left)
+        .line_height(LineHeight::Pixels(50))
+        .build();
 
-    let style = MonoTextStyle::new(&FONT_9X18_BOLD, wepd::Color::Black);
-    Text::new("Hello world", Point { x: 5, y: 15 }, style)
-        .draw(&mut fb)
-        .unwrap();
+    Text::with_text_style(
+        "Hello World",
+        Point::new(5, 15),
+        character_style,
+        text_style,
+    )
+    .draw(&mut fb);
+
+    // let style = MonoTextStyle::new(&FONT_10X20, BinaryColor::On);
+    // Text::new("Hello world", Point { x: 5, y: 40 }, style)
+    //     .draw(&mut fb)
+    //     .unwrap();
+
+    let bmp_data = include_bytes!("../ferris.bmp");
+    // let idk = Bmp::<Rgb888>::from_slice(bmp_data).unwrap();
+
+    let bmp: Bmp<BinaryColor> = Bmp::from_slice(bmp_data).unwrap();
+    Image::new(&bmp, Point::new(10, 20)).draw(&mut fb);
     fb.flush(&mut display).unwrap();
 
     // let result = display.draw_image(include_bytes!("../image.bin"), 0, 0, 200, 200);

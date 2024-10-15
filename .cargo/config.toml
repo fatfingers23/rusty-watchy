@@ -1,14 +1,12 @@
 [target.xtensa-esp32s3-none-elf]
-runner = "espflash flash --monitor"
+runner = "espflash flash --monitor -p /dev/tty.usbmodem311401"
 
 
 [env]
-ESP_LOG="info"
+ESP_LOG = "info"
 
 [build]
-rustflags = [
-  "-C", "link-arg=-nostartfiles",
-]
+rustflags = ["-C", "link-arg=-nostartfiles"]
 
 target = "xtensa-esp32s3-none-elf"
 
