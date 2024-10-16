@@ -1,5 +1,6 @@
 [target.xtensa-esp32s3-none-elf]
 runner = "espflash flash --monitor -p /dev/tty.usbmodem311401"
+# runner = "espflash flash --monitor"
 
 
 [env]

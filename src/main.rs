@@ -3,7 +3,10 @@
 
 use embedded_graphics::{
     image::Image,
-    mono_font::{iso_8859_5::FONT_10X20, MonoTextStyle},
+    mono_font::{
+        ascii::{self, FONT_10X20},
+        MonoTextStyle,
+    },
     pixelcolor::{BinaryColor, Rgb555, Rgb888},
     prelude::{Point, *},
     text::{Alignment, LineHeight, Text, TextStyleBuilder},
@@ -17,7 +20,7 @@ use esp_hal::{
     spi::{master::Spi, SpiMode},
 };
 use tinybmp::Bmp;
-use wepd::{Color, DelayWaiter, Display, DisplayConfiguration, Framebuffer};
+use wepd::{DelayWaiter, Display, DisplayConfiguration, Framebuffer};
 
 extern crate alloc;
 use core::mem::MaybeUninit;
@@ -66,37 +69,19 @@ fn main() -> ! {
 
     display.clear_screen(0xFF).unwrap();
 
-    let mut fb = Framebuffer::new();
-    let character_style = MonoTextStyle::new(&FONT_10X20, BinaryColor::On);
-    let text_style = TextStyleBuilder::new()
-        .alignment(Alignment::Left)
-        .line_height(LineHeight::Pixels(50))
-        .build();
+    let mut fb = wepd::Framebuffer::new();
 
-    Text::with_text_style(
-        "Hello World",
-        Point::new(5, 15),
-        character_style,
-        text_style,
-    )
-    .draw(&mut fb);
-
-    // let style = MonoTextStyle::new(&FONT_10X20, BinaryColor::On);
-    // Text::new("Hello world", Point { x: 5, y: 40 }, style)
-    //     .draw(&mut fb)
-    //     .unwrap();
+    let style = MonoTextStyle::new(&ascii::FONT_10X20, BinaryColor::Off);
+    Text::new("Hello world", Point { x: 5, y: 15 }, style)
+        .draw(&mut fb)
+        .unwrap();
 
     let bmp_data = include_bytes!("../ferris.bmp");
-    // let idk = Bmp::<Rgb888>::from_slice(bmp_data).unwrap();
-
     let bmp: Bmp<BinaryColor> = Bmp::from_slice(bmp_data).unwrap();
-    Image::new(&bmp, Point::new(10, 20)).draw(&mut fb);
+    let _ = Image::new(&bmp, Point::new(10, 20)).draw(&mut fb);
+
     fb.flush(&mut display).unwrap();
 
-    // let result = display.draw_image(include_bytes!("../image.bin"), 0, 0, 200, 200);
-    // if let Err(e) = result {
-    //     log::error!("Error writing image: {:?}", e);
-    // }
     log::info!("Hello world!");
     loop {
         delay.delay(500.millis());
