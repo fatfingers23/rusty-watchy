@@ -1,8 +1,5 @@
 use embedded_graphics::{
-    mono_font::{
-        ascii::{FONT_10X20},
-        MonoTextStyle,
-    },
+    mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::BinaryColor,
     prelude::{Point, *},
     text::Text,
@@ -15,7 +12,7 @@ use esp_hal::{
     prelude::*,
     spi::{master::Spi, FullDuplexMode, SpiMode},
 };
-use log::error;
+use log::{error, info};
 use wepd::{DelayWaiter, Display, DisplayConfiguration, Framebuffer};
 
 //TODO must pass over?
@@ -34,7 +31,9 @@ impl<'a> Configy<'a> {
     }
 }
 
-pub struct Wathcy<'a> {
+pub trait Widget {}
+
+pub struct Watchy<'a> {
     config: Configy<'a>,
     display: Display<
         DisplayConfiguration<
@@ -49,7 +48,7 @@ pub struct Wathcy<'a> {
     frame_buffer: Framebuffer,
 }
 
-impl<'a> Wathcy<'a> {
+impl<'a> Watchy<'a> {
     //TODO: Look at doing feature flags for previous versions of watchy
     //TODO: Make a override to pass in config
     pub fn new(peripherals: Peripherals) -> Self {
@@ -62,7 +61,7 @@ impl<'a> Wathcy<'a> {
             .with_mosi(io.pins.gpio48)
             .with_sck(io.pins.gpio47);
 
-        let display = Display::new(DisplayConfiguration {
+        let mut display = Display::new(DisplayConfiguration {
             spi: ExclusiveDevice::new(bus, Output::new(io.pins.gpio33, Level::High), delay)
                 .unwrap(),
             dc: Output::new(io.pins.gpio34, Level::High),
@@ -75,7 +74,7 @@ impl<'a> Wathcy<'a> {
         })
         .unwrap();
 
-        Wathcy {
+        Watchy {
             config: Configy::default(),
             display,
             frame_buffer: Framebuffer::new(),
@@ -96,6 +95,7 @@ impl<'a> Wathcy<'a> {
         match result {
             Ok(_) => {
                 let draw_to_buffer = self.frame_buffer.flush(&mut self.display);
+                info!("Drawing to buffer");
                 if let Err(e) = draw_to_buffer {
                     error!("{:?}", e);
                     return Err(DisplayErrors::ErrorLoadingEmbeddedText);
@@ -110,6 +110,8 @@ impl<'a> Wathcy<'a> {
     }
 }
 
+// #[derive(Debug, defmt::Format)]
+// #[cfg_attr(feature = "defmt", derive(::defmt::Format))]
 pub enum DisplayErrors {
     ErrorLoadingEmbeddedText,
     CouldNotDrawText,

@@ -4,7 +4,7 @@ runner = "espflash flash --monitor -p /dev/tty.usbmodem311401"
 
 
 [env]
-ESP_LOG = "info"
+ESP_LOG = "debug"
 # SSID = "network"
 # PASSWORD = "password"
 
