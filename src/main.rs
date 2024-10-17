@@ -37,10 +37,7 @@ fn main() -> ! {
     //Idealy project won't need it, but eh. Need to look to just see what is needed to pass over
     let peripherals = esp_hal::init(esp_hal::Config::default());
     let mut watchy = Watchy::new(peripherals);
-    let did_it_write = watchy.write_text("Hello world", Point { x: 5, y: 50 });
-    if did_it_write.is_err() {
-        log::error!("Failed to write text to display");
-    }
+    let _ = watchy.write_text("Hello world", Point { x: 5, y: 15 });
 
     log::info!("Hello world!");
     loop {

@@ -1,5 +1,8 @@
 use embedded_graphics::{
-    mono_font::{ascii::FONT_10X20, MonoTextStyle},
+    mono_font::{
+        ascii::{self, FONT_10X20},
+        MonoTextStyle,
+    },
     pixelcolor::BinaryColor,
     prelude::{Point, *},
     text::Text,
@@ -13,6 +16,7 @@ use esp_hal::{
     spi::{master::Spi, FullDuplexMode, SpiMode},
 };
 use log::{error, info};
+use tinybmp::Bmp;
 use wepd::{DelayWaiter, Display, DisplayConfiguration, Framebuffer};
 
 //TODO must pass over?
@@ -74,9 +78,12 @@ impl<'a> Watchy<'a> {
         })
         .unwrap();
 
+        display.reset().unwrap();
+        display.clear_screen(0xFF).unwrap();
+
         Watchy {
             config: Configy::default(),
-            display,
+            display: display,
             frame_buffer: Framebuffer::new(),
         }
     }
@@ -95,6 +102,7 @@ impl<'a> Watchy<'a> {
         match result {
             Ok(_) => {
                 let draw_to_buffer = self.frame_buffer.flush(&mut self.display);
+                // self.display.draw_image(bitmap, self.frame_buffer, y_lo, x_hi, y_hi)
                 info!("Drawing to buffer");
                 if let Err(e) = draw_to_buffer {
                     error!("{:?}", e);
