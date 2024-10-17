@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+use embedded_graphics::prelude::Point;
 use esp_backtrace as _;
 use esp_hal::{delay::Delay, prelude::*};
 use watchy::watch_face::Wathcy;
@@ -30,12 +31,15 @@ fn main() -> ! {
     #[allow(unused)]
     esp_println::logger::init_logger_from_env();
 
-    let peripherals = esp_hal::init(esp_hal::Config::default());
     let delay = Delay::new();
     init_heap();
+    //Really don't know how I feel just passing over all of the peripherals
+    //Idealy project won't need it, but eh. Need to look to just see what is needed to pass over
 
+    let peripherals = esp_hal::init(esp_hal::Config::default());
     let mut watchy = Wathcy::new(peripherals);
-    watchy.write_some_text();
+    let _ = watchy.write_text("Hello world", Point { x: 5, y: 15 });
+
     // let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
 
     // let bus = Spi::new(peripherals.SPI2, 100.kHz(), SpiMode::Mode0)
