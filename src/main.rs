@@ -1,9 +1,10 @@
 #![no_std]
 #![no_main]
 
+use embassy_executor::Spawner;
 use embedded_graphics::prelude::Point;
 use esp_backtrace as _;
-use esp_hal::{delay::Delay, prelude::*};
+use esp_hal::{delay::Delay, gpio::Io, prelude::*};
 use watchy::watchy::Watchy;
 
 extern crate alloc;
@@ -26,14 +27,16 @@ fn init_heap() {
 const SSID: &str = env!("SSID");
 const PASSWORD: &str = env!("PASSWORD");
 
-#[entry]
-fn main() -> ! {
+#[esp_hal_embassy::main]
+async fn main(spawner: Spawner) -> ! {
     #[allow(unused)]
     esp_println::logger::init_logger_from_env();
 
     let delay = Delay::new();
     init_heap();
     //Really don't know how I feel just passing over all of the peripherals
+    //The idea currently is this just lets the end user with no schmatic knowlege easily get to writing watch faces
+    //Maybe create one that just takes all the different peripherals and passes them over
     //Idealy project won't need it, but eh. Need to look to just see what is needed to pass over
     let peripherals = esp_hal::init(esp_hal::Config::default());
     let mut watchy = Watchy::new(peripherals);
