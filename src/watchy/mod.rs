@@ -1,1 +1,1 @@
-pub mod watch_face;
+pub mod watchy;

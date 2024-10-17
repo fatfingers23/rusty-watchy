@@ -4,7 +4,7 @@
 use embedded_graphics::prelude::Point;
 use esp_backtrace as _;
 use esp_hal::{delay::Delay, prelude::*};
-use watchy::watch_face::Wathcy;
+use watchy::watchy::Wathcy;
 
 extern crate alloc;
 use core::mem::MaybeUninit;

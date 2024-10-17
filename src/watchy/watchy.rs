@@ -1,6 +1,6 @@
 use embedded_graphics::{
     mono_font::{
-        ascii::{self, FONT_10X20},
+        ascii::{FONT_10X20},
         MonoTextStyle,
     },
     pixelcolor::BinaryColor,
@@ -11,26 +11,11 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 use esp_hal::{
     delay::Delay,
     gpio::{Input, Io, Level, Output, Pull},
-    peripheral::{Peripheral, PeripheralRef},
-    peripherals::{Peripherals, SPI2, WIFI},
+    peripherals::{Peripherals, SPI2},
     prelude::*,
-    rng::Rng,
     spi::{master::Spi, FullDuplexMode, SpiMode},
-    time,
-    timer::timg::TimerGroup,
-};
-use esp_println::println;
-use esp_wifi::{
-    init,
-    wifi::{
-        utils::create_network_interface, AccessPointInfo, ClientConfiguration, Configuration,
-        WifiError, WifiStaDevice,
-    },
-    wifi_interface::WifiStack,
-    EspWifiInitFor,
 };
 use log::error;
-use smoltcp::iface::SocketStorage;
 use wepd::{DelayWaiter, Display, DisplayConfiguration, Framebuffer};
 
 //TODO must pass over?
@@ -66,10 +51,9 @@ pub struct Wathcy<'a> {
 
 impl<'a> Wathcy<'a> {
     //TODO: Look at doing feature flags for previous versions of watchy
+    //TODO: Make a override to pass in config
     pub fn new(peripherals: Peripherals) -> Self {
-        let config = Configy::default();
         let delay = Delay::new();
-        let mut config = Configy::default();
 
         //Display setup
         let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
@@ -78,7 +62,7 @@ impl<'a> Wathcy<'a> {
             .with_mosi(io.pins.gpio48)
             .with_sck(io.pins.gpio47);
 
-        let mut display = Display::new(DisplayConfiguration {
+        let display = Display::new(DisplayConfiguration {
             spi: ExclusiveDevice::new(bus, Output::new(io.pins.gpio33, Level::High), delay)
                 .unwrap(),
             dc: Output::new(io.pins.gpio34, Level::High),
@@ -92,7 +76,7 @@ impl<'a> Wathcy<'a> {
         .unwrap();
 
         Wathcy {
-            config,
+            config: Configy::default(),
             display,
             frame_buffer: Framebuffer::new(),
         }
