@@ -5,6 +5,8 @@ runner = "espflash flash --monitor -p /dev/tty.usbmodem311401"
 
 [env]
 ESP_LOG = "info"
+# SSID = "network"
+# PASSWORD = "password"
 
 [build]
 rustflags = ["-C", "link-arg=-nostartfiles"]

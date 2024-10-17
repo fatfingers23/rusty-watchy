@@ -1114,6 +1114,7 @@ checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
 [[package]]
 name = "wepd"
 version = "0.1.0"
+source = "git+https://github.com/fatfingers23/wepd.git#8d8aa68a23f88377153e447d6b0514617753bd46"
 dependencies = [
  "embedded-graphics-core",
  "embedded-hal 1.0.0",
