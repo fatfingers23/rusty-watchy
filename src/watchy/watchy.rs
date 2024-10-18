@@ -1,8 +1,5 @@
 use embedded_graphics::{
-    mono_font::{
-        ascii::{self, FONT_10X20},
-        MonoTextStyle,
-    },
+    mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::BinaryColor,
     prelude::{Point, *},
     text::Text,
@@ -16,13 +13,7 @@ use esp_hal::{
     spi::{master::Spi, FullDuplexMode, SpiMode},
 };
 use log::{error, info};
-use tinybmp::Bmp;
 use wepd::{DelayWaiter, Display, DisplayConfiguration, Framebuffer};
-
-//TODO must pass over?
-const SSID: &str = env!("SSID");
-const PASSWORD: &str = env!("PASSWORD");
-
 pub struct Configy<'a> {
     text_style: MonoTextStyle<'a, BinaryColor>,
 }
@@ -35,11 +26,9 @@ impl<'a> Configy<'a> {
     }
 }
 
-pub trait Widget {}
-
 pub struct Watchy<'a> {
     config: Configy<'a>,
-    display: Display<
+    pub display: Display<
         DisplayConfiguration<
             ExclusiveDevice<Spi<'a, SPI2, FullDuplexMode>, Output<'a>, Delay>,
             Output<'a>,
@@ -49,7 +38,7 @@ pub struct Watchy<'a> {
             DelayWaiter<Delay>,
         >,
     >,
-    frame_buffer: Framebuffer,
+    pub frame_buffer: Framebuffer,
 }
 
 impl<'a> Watchy<'a> {
@@ -102,7 +91,6 @@ impl<'a> Watchy<'a> {
         match result {
             Ok(_) => {
                 let draw_to_buffer = self.frame_buffer.flush(&mut self.display);
-                // self.display.draw_image(bitmap, self.frame_buffer, y_lo, x_hi, y_hi)
                 info!("Drawing to buffer");
                 if let Err(e) = draw_to_buffer {
                     error!("{:?}", e);
@@ -118,8 +106,6 @@ impl<'a> Watchy<'a> {
     }
 }
 
-// #[derive(Debug, defmt::Format)]
-// #[cfg_attr(feature = "defmt", derive(::defmt::Format))]
 pub enum DisplayErrors {
     ErrorLoadingEmbeddedText,
     CouldNotDrawText,

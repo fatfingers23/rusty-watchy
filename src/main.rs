@@ -4,11 +4,16 @@
 use embassy_executor::Spawner;
 use embedded_graphics::prelude::Point;
 use esp_backtrace as _;
-use esp_hal::{delay::Delay, gpio::Io, prelude::*};
-use watchy::watchy::Watchy;
-
+use esp_hal::{delay::Delay, prelude::*};
+use watchy::{
+    watchy::Watchy,
+    widget::{
+        default_widgets::{TimeWidget, WeatherWidget},
+        Widget,
+    },
+};
 extern crate alloc;
-use core::mem::MaybeUninit;
+use core::{borrow::Borrow, mem::MaybeUninit, time};
 mod watchy;
 
 fn init_heap() {
@@ -24,9 +29,6 @@ fn init_heap() {
     }
 }
 
-const SSID: &str = env!("SSID");
-const PASSWORD: &str = env!("PASSWORD");
-
 #[esp_hal_embassy::main]
 async fn main(spawner: Spawner) -> ! {
     #[allow(unused)]
@@ -36,11 +38,17 @@ async fn main(spawner: Spawner) -> ! {
     init_heap();
     //Really don't know how I feel just passing over all of the peripherals
     //The idea currently is this just lets the end user with no schmatic knowlege easily get to writing watch faces
-    //Maybe create one that just takes all the different peripherals and passes them over
-    //Idealy project won't need it, but eh. Need to look to just see what is needed to pass over
+    //Maybe create one that just takes all the different peripherals and passes them over for those who want more control
+    //or to implement features not done here
     let peripherals = esp_hal::init(esp_hal::Config::default());
     let mut watchy = Watchy::new(peripherals);
-    let _ = watchy.write_text("Hello world", Point { x: 5, y: 15 });
+    let time_widget = TimeWidget {};
+    let weather_widget = WeatherWidget { weather: "Sunny" };
+    weather_widget.draw_widget(&mut watchy, Point { x: 5, y: 15 });
+
+    time_widget.draw_widget(&mut watchy, Point { x: 50, y: 50 });
+
+    // let _ = watchy.write_text("Hello world", Point { x: 5, y: 15 });
 
     log::info!("Hello world!");
     loop {
